@@ -3,8 +3,6 @@
 
 #include "sphere_drawing.h"
 
-#include "../leak_fix.h"
-
 #include "CGL/color.h"
 #include "CGL/vector3D.h"
 
@@ -163,7 +161,7 @@ void SphereMesh::draw_sphere(GLShader &shader, const Vector3D &p, double r) {
   }
 
   shader.drawArray(GL_TRIANGLES, 0, sphere_num_indices);
-#ifdef LEAK_PATCH_ON
+
   shader.freeAttrib("in_position");
   if (shader.attrib("in_normal", false) != -1) {
     shader.freeAttrib("in_normal");
@@ -174,7 +172,6 @@ void SphereMesh::draw_sphere(GLShader &shader, const Vector3D &p, double r) {
   if (shader.attrib("in_tangent", false) != -1) {
     shader.freeAttrib("in_tangent");
   }
-#endif
 }
 
 } // namespace Misc
