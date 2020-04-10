@@ -12,7 +12,7 @@ if (BUILD_DEBUG)
   set(CMAKE_BUILD_TYPE Debug)
 endif()
 
-if(${CMAKE_BUILD_TYPE} STREQUAL "Debug")
+if("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
   set(BUILD_DEBUG ON CACHE BOOL "Build with debug settings" FORCE)
 endif()
 
