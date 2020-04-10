@@ -3,6 +3,8 @@
 
 # Visual Studio
 Win32/*
+.vs
+CMakeSettings.json
 
 # Prerequisites
 *.d

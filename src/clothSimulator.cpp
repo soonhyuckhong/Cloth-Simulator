@@ -123,8 +123,8 @@ void ClothSimulator::load_shaders() {
       vert_shader = associated_vert_shader_path;
     }
     
-    GLShader nanogui_shader;
-    nanogui_shader.initFromFiles(shader_name, vert_shader,
+    std::shared_ptr<GLShader> nanogui_shader = make_shared<GLShader>();
+    nanogui_shader->initFromFiles(shader_name, vert_shader,
                                   m_project_root + "/shaders/" + shader_fname);
     
     // Special filenames are treated a bit differently
@@ -168,7 +168,7 @@ ClothSimulator::ClothSimulator(std::string project_root, Screen *screen)
 
 ClothSimulator::~ClothSimulator() {
   for (auto shader : shaders) {
-    shader.nanogui_shader.free();
+    shader.nanogui_shader->free();
   }
   glDeleteTextures(1, &m_gl_texture_1);
   glDeleteTextures(1, &m_gl_texture_2);
@@ -254,7 +254,7 @@ void ClothSimulator::drawContents() {
 
   const UserShader& active_shader = shaders[active_shader_idx];
 
-  GLShader shader = active_shader.nanogui_shader;
+  GLShader &shader = *active_shader.nanogui_shader;
   shader.bind();
 
   // Prepare the camera projection matrix
@@ -468,7 +468,7 @@ Matrix4f ClothSimulator::getProjectionMatrix() {
   double cam_near = camera.near_clip();
   double cam_far = camera.far_clip();
 
-  double theta = camera.v_fov() * M_PI / 360;
+  double theta = camera.v_fov() * PI / 360;
   double range = cam_far - cam_near;
   double invtan = 1. / tanf(theta);
 

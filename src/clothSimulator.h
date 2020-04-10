@@ -136,13 +136,13 @@ private:
 };
 
 struct UserShader {
-  UserShader(std::string display_name, GLShader nanogui_shader, ShaderTypeHint type_hint)
+  UserShader(std::string display_name, std::shared_ptr<GLShader> nanogui_shader, ShaderTypeHint type_hint)
   : display_name(display_name)
   , nanogui_shader(nanogui_shader)
   , type_hint(type_hint) {
   }
   
-  GLShader nanogui_shader;
+  std::shared_ptr<GLShader> nanogui_shader;
   std::string display_name;
   ShaderTypeHint type_hint;
   

@@ -48,8 +48,8 @@ SphereMesh::SphereMesh(int num_lat, int num_lon)
         lon -= 1.0;
       }
 
-      lat *= M_PI;
-      lon *= 2 * M_PI;
+      lat *= PI;
+      lon *= 2 * PI;
 
       // Vertex and normals are actually the same here
       vptr[NORMAL_OFFSET + 0] = vptr[VERTEX_OFFSET + 0] = sin(lat) * sin(lon);
