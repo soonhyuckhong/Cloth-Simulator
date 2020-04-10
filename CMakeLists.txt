@@ -5,8 +5,16 @@ project(ClothSim)
 # Build options
 #-------------------------------------------------------------------------------
 option(BUILD_LIBCGL    "Build with libCGL"            ON)
-option(BUILD_DEBUG     "Build with debug settings"    ON)
+option(BUILD_DEBUG     "Build with debug settings"    OFF)
 option(BUILD_DOCS      "Build documentation"          OFF)
+
+if (BUILD_DEBUG)
+  set(CMAKE_BUILD_TYPE Debug)
+endif()
+
+if(${CMAKE_BUILD_TYPE} STREQUAL "Debug")
+  set(BUILD_DEBUG ON CACHE BOOL "Build with debug settings" FORCE)
+endif()
 
 #-------------------------------------------------------------------------------
 # Platform-specific settings
