@@ -1,0 +1,351 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+    <style>
+        body {
+            padding: 100px;
+            width: 1000px;
+            margin: auto;
+            text-align: left;
+            font-weight: 300;
+            font-family: 'Open Sans', sans-serif;
+            color: #121212;
+        }
+
+        h1, h2, h3, h4 {
+            font-family: 'Source Sans Pro', sans-serif;
+        }
+    </style>
+    <title>CS 184 Cloth Simulation</title>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <link href="https://fonts.googleapis.com/css?family=Open+Sans|Source+Sans+Pro" rel="stylesheet" />
+</head>
+
+
+<body>
+
+    <h1 align="left">CS 184: Computer Graphics and Imaging, Spring 2017</h1>
+    <h1 align="left">Project 4: Cloth Simulator</h1>
+    <h2 align="left">Soonhyuck Hong</h2>
+
+    <br /><br />
+
+          <div>
+
+              <h2 align="left">Overview</h2>
+              <p>In this project, I implemented a real-time simulation of a cloth using a mass and spring based system. I built data structures to discretely represent the cloth, defined and applied physical constraints on them, and applied numerical integration to simulate the way cloth moves over time. Then, I implemented collisions with other objects as well as self-collisions to prevent cloth clipping. Lastly, I made a variety of shaders to visually improve the appearance of the cloth.</p>
+
+              <h2 align="left">Part I: Masses and springs</h2>
+
+              <p>Here is a screenshot of the cloth wireframe of <code>scene/pinned2.json</code>, showing the structure of the point masses and springs.</p>
+
+              <div align="center">
+                  <img src="images/pinned2/wireframe.png" align="middle" width="700" />
+              </div>
+
+              <p>Here are some images of the wireframe (1) without any shearing constraints, (2) with only shearing constraints, and (3) with all constraints.</p>
+
+              <div>
+                  <table style="width:100%">
+                      <tr>
+                          <td>
+                              <img src="images/pinned2/no_shearing.png" width="333" />
+                              <figcaption align="center">(1)</figcaption>
+                          </td>
+                          <td>
+                              <img src="images/pinned2/only_shearing.png" width="333" />
+                              <figcaption align="center">(2)</figcaption>
+                          </td>
+                          <td>
+                              <img src="images/pinned2/all_constraints.png" width="333" />
+                              <figcaption align="center">(3)</figcaption>
+                          </td>
+                      </tr>
+                  </table>
+              </div>
+
+              <h2 align="left">Part II: Simulation via Numerical Integration</h2>
+
+              <h3 align="left">ks</h3>
+              <p>Shown below are final resting views of <code>scene/pinned2.json</code> with different values for the spring constant <code>ks</code>.</p>
+
+              <div>
+                  <table style="width:100%">
+                      <tr>
+                          <td>
+                              <img src="images/pinned2/ks_10.png" width="250" />
+                              <figcaption align="center">ks = 10</figcaption>
+                          </td>
+                          <td>
+                              <img src="images/pinned2/ks_1000.png" width="250" />
+                              <figcaption align="center">ks = 1000</figcaption>
+                          </td>
+                          <td>
+                              <img src="images/pinned2/default.png" width="250" />
+                              <figcaption align="center">ks = 5000 (default)</figcaption>
+                          </td>
+                          <td>
+                              <img src="images/pinned2/ks_10000.png" width="250" />
+                              <figcaption align="center">ks = 10000</figcaption>
+                          </td>
+                      </tr>
+                  </table>
+              </div>
+
+              <p>A low <code>ks</code> produces a loose cloth (more folds at top) while a high <code>ks</code> produces a tight cloth (less folds at top).</p>
+
+              <h3 align="left">density</h3>
+              <p>Shown below are final resting views of <code>scene/pinned2.json</code> with different values for <code>density</code>.</p>
+
+              <div>
+                  <table style="width:100%">
+                      <tr>
+                          <td>
+                              <img src="images/pinned2/density_5.png" width="250" />
+                              <figcaption align="center">density = 5</figcaption>
+                          </td>
+                          <td>
+                              <img src="images/pinned2/default.png" width="250" />
+                              <figcaption align="center">density = 15 (default)</figcaption>
+                          </td>
+                          <td>
+                              <img src="images/pinned2/density_30.png" width="250" />
+                              <figcaption align="center">density = 30</figcaption>
+                          </td>
+                          <td>
+                              <img src="images/pinned2/density_60.png" width="250" />
+                              <figcaption align="center">density = 60</figcaption>
+                          </td>
+                      </tr>
+                  </table>
+              </div>
+
+              <p>A low <code>density</code> means less downward gravitational force on the cloth (less folds) while a high <code>density</code> means more gravitational force (more folds). </p>
+
+              <h3 align="left">damping</h3>
+              <p>Shown below are final resting views of <code>scene/pinned2.json</code> with different values for <code>damping</code>.</p>
+
+              <div>
+                  <table style="width:100%">
+                      <tr>
+                          <td>
+                              <img src="images/pinned2/damping_0.gif" width="250" />
+                              <figcaption align="center">damping = 0.0%</figcaption>
+                          </td>
+                          <td>
+                              <img src="images/pinned2/damping_01.gif" width="250" />
+                              <figcaption align="center">damping = 0.1%</figcaption>
+                          </td>
+                          <td>
+                              <img src="images/pinned2/default.gif" width="250" />
+                              <figcaption align="center">damping = 0.2%</figcaption>
+                          </td>
+                          <td>
+                              <img src="images/pinned2/damping_04.gif" width="250" />
+                              <figcaption align="center">damping = 0.4%</figcaption>
+                          </td>
+                      </tr>
+                  </table>
+              </div>
+
+              <p>A low <code>damping</code> value means the cloth will behave with more spring (come to rest slower) while a high <code>damping</code> value means the cloth will react more sluggishly (come to rest sooner).</p>
+
+              <p>Here is a screenshot of <code>scene/pinned4.json</code> at its final resting state with default values.</p>
+
+              <div align="center">
+                  <img src="images/pinned4/resting.png" align="middle" width="700" />
+              </div>
+
+              <h2 align="left">Part III: Handling Collisions with Other Objects</h2>
+
+              <p>Shown below are the final resting state of <code>scene/sphere.json</code> with different values of <code>ks</code>.</p>
+
+              <div>
+                  <table style="width:100%">
+                      <tr>
+                          <td>
+                              <img src="images/sphere/ks_500.png" width="333" />
+                              <figcaption align="center">ks = 500</figcaption>
+                          </td>
+                          <td>
+                              <img src="images/sphere/default.png" width="333" />
+                              <figcaption align="center">ks = 5000</figcaption>
+                          </td>
+                          <td>
+                              <img src="images/sphere/ks_50000.png" width="333" />
+                              <figcaption align="center">ks = 50000</figcaption>
+                          </td>
+                      </tr>
+                  </table>
+              </div>
+
+              <p>Here is a screenshot of <code>scene/plane.json</code> at its final resting state.</p>
+
+              <div align="center">
+                  <img src="images/plane/resting.png" width="700" />
+              </div>
+
+              <h2 align="left">Part IV: Handling Self-Collisions</h2>
+
+              <p>Here are some gifs of <code>scene/selfCollisions.json</code> with varying <code>ks</code> and <code>density</code> values.</p>
+
+              <div align="center">
+                  <img src="images/selfCollision/default.gif" align="middle" width="700" />
+                  <figcaption align="center">ks = 5000 and density = 15 (default)</figcaption>
+              </div>
+
+              <div>
+                  <table style="width:100%">
+                      <tr>
+                          <td>
+                              <img src="images/selfCollision/ks_500.gif" align="middle" width="500" />
+                              <figcaption align="center">ks = 500</figcaption>
+                          </td>
+                          <td>
+                              <img src="images/selfCollision/ks_50000.gif" align="middle" width="500" />
+                              <figcaption align="center">ks = 50000</figcaption>
+                          </td>
+                      </tr>
+                      <tr>
+                          <td>
+                              <img src="images/selfCollision/density_5.gif" align="middle" width="500" />
+                              <figcaption align="center">density = 5</figcaption>
+                          </td>
+                          <td>
+                              <img src="images/selfCollision/density_30.gif" align="middle" width="500" />
+                              <figcaption align="center">density = 30</figcaption>
+                          </td>
+                      </tr>
+                  </table>
+              </div>
+
+              <p>With a higher <code>ks</code> value, the cloth has less ripples and has a smoother look. There are less bends and folds overall.<br />With a lower <code>density</code> value, the cloth spreads out more as it hits the plane.</p>
+
+              <h2 align="left">Part V: Shaders</h2>
+
+              <p>Shaders are isolated programs that run in parallel on GPU, outputting a single 4 dimensional vector representing the color at an input. <br />There are two basic OpenGL shader types:</p>
+
+              <ul>
+                  <li><b>Vertex Shaders</b> apply transforms to vertices, modify properties like position and normal vectors, and write the final vertex position to <code>gl_Position</code>. The per-vertex values are interpolated via barycentric coordinates across the face of the polygon.</li>
+                  <li><b>Fragment Shaders</b> take in geometric attributes of fragments, created after rasterization, to compute a final color value to <code>out_color</code>.</li>
+              </ul>
+
+              <h3>Blinn-Phong Shading</h3>
+
+              <p>explain blinn=phong here.</p>
+
+              <p>Here are screenshots of the individual Blinn-Phong model components.</p>
+
+              <div>
+                  <table style="width:100%">
+                      <tr>
+                          <td>
+                              <img src="images/sphere/ambient.png" width="333" />
+                              <figcaption align="center">ambient component</figcaption>
+                          </td>
+                          <td>
+                              <img src="images/sphere/diffuse.png" width="333" />
+                              <figcaption align="center">diffuse component</figcaption>
+                          </td>
+                          <td>
+                              <img src="images/sphere/specular.png" width="333" />
+                              <figcaption align="center">specular component</figcaption>
+                          </td>
+                      </tr>
+                  </table>
+              </div>
+
+              <p>Combing the three components results in:</p>
+
+              <div align="center">
+                  <img src="images/sphere/blinn_phong.png" align="middle" width="700" />
+                  <figcaption align="center">Blinn-Phong model</figcaption>
+              </div>
+
+              <h3>Texture Mapping</h3>
+
+              <p>Here is a screenshot of the texture mapping shader</p>
+
+              <div align="center">
+                  <img src="images/sphere/texture.png" align="middle" width="700" />
+                  <figcaption align="center">custom texture</figcaption>
+              </div>
+
+              <h3>Displacement and Bump Mapping</h3>
+
+              <p>Bump mapping results in a visual appearance of the texture on the surface, but does not change the geometry. Displacement mapping on the other hand, changes the geometry to match the texture. Here are some screenshot of bump and displacement shaders.</p>
+
+              <p>Bump mapping vs displacement mapping on the cloth at <code>-o 128 -a 128</code>.</p>
+
+              <div>
+                  <table style="width:100%">
+                      <tr>
+                          <td>
+                              <img src="images/sphere/bumping_cloth_128.png" width="500" />
+                              <figcaption align="center">bump mapping</figcaption>
+                          </td>
+                          <td>
+                              <img src="images/sphere/displacement_cloth_128.png" width="500" />
+                              <figcaption align="center">displacement mapping</figcaption>
+                          </td>
+                      </tr>
+                  </table>
+              </div>
+
+              <p>Bump mapping vs displacement mapping on the sphere at <code>-o 128 -a 128</code>. </p>
+
+              <div>
+                  <table style="width:100%">
+                      <tr>
+                          <td>
+                              <img src="images/sphere/bumping_sphere_128.png" width="500" />
+                              <figcaption align="center">bump mapping</figcaption>
+                          </td>
+                          <td>
+                              <img src="images/sphere/displacement_sphere_128.png" width="500" />
+                              <figcaption align="center">displacement mapping</figcaption>
+                          </td>
+                      </tr>
+                  </table>
+              </div>
+
+              <p>Bump mapping vs displacement mapping on the sphere at <code>-o 16 -a 16</code>. </p>
+
+              <div>
+                  <table style="width:100%">
+                      <tr>
+                          <td>
+                              <img src="images/sphere/bumping_sphere_16.png" width="500" />
+                              <figcaption align="center">bump mapping</figcaption>
+                          </td>
+                          <td>
+                              <img src="images/sphere/displacement_sphere_16.png" width="500" />
+                              <figcaption align="center">displacement mapping</figcaption>
+                          </td>
+                      </tr>
+                  </table>
+              </div>
+
+              <p>The shaders at different sphere mesh coarseness are, in my opinion, not very noticeable and different. However, I would say that the lower resolution results in a less smooth surface.</p>
+
+              <h3>Environment-mapped Reflection</h3>
+
+              <p>Here is a screenshot of the mirror shader.</p>
+
+              <div>
+                  <table style="width:100%">
+                      <tr>
+                          <td>
+                              <img src="images/sphere/mirror_sphere.png" width="500" />
+                          </td>
+                          <td>
+                              <img src="images/sphere/mirror_cloth.png" width="500" />
+                          </td>
+                      </tr>
+                  </table>
+              </div>
+
+          </div>
+
+</body>
+</html>
